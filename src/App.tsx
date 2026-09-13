@@ -14,16 +14,32 @@ import { ReportsView } from './features/reports/ReportsView';
 import { SettingsView } from './features/settings/SettingsView';
 import { UsersView } from './features/users/UsersView';
 import { FinanceView } from './features/finance/FinanceView';
+import { SubscriptionRequiredView } from './features/subscription/SubscriptionRequiredView';
+import { SubscriptionView } from './features/subscription/SubscriptionView';
 import { GraduationCap, RefreshCw } from 'lucide-react';
 
 const SchoolOSApp: React.FC = () => {
-  const { currentUser, profile, school, loading, schoolLoading, reloadSchool, reloadProfile } = useAuth();
+  const {
+    currentUser,
+    profile,
+    school,
+    loading,
+    schoolLoading,
+    subscription,
+    subscriptionLoading,
+    entitlement,
+    reloadSchool,
+    reloadProfile,
+    reloadSubscription,
+    logout,
+  } = useAuth();
   const [currentTab, setCurrentTab] = useState<NavItemKey>('dashboard');
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [forceSetup, setForceSetup] = useState(false);
+  const [showSubscriptionDetails, setShowSubscriptionDetails] = useState(false);
 
   // Initializing state
-  if (loading || schoolLoading) {
+  if (loading || schoolLoading || (profile && subscriptionLoading)) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-4">
         <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 mb-4 animate-pulse">
@@ -59,6 +75,28 @@ const SchoolOSApp: React.FC = () => {
           await reloadProfile();
           setCurrentTab('dashboard');
         }}
+      />
+    );
+  }
+
+  if (
+    entitlement.state === 'ERROR' ||
+    entitlement.state === 'CANCELLED' ||
+    entitlement.state === 'SUSPENDED' ||
+    entitlement.state === 'MISSING_CONFIGURATION'
+  ) {
+    if (showSubscriptionDetails) {
+      return <SubscriptionView subscription={subscription} />;
+    }
+    return (
+      <SubscriptionRequiredView
+        school={school}
+        subscription={subscription}
+        state={entitlement.state}
+        reason={entitlement.reason}
+        onReload={reloadSubscription}
+        onLogout={logout}
+        onOpenBilling={() => setShowSubscriptionDetails(true)}
       />
     );
   }
@@ -113,6 +151,7 @@ const SchoolOSApp: React.FC = () => {
           {currentTab === 'school-settings' && <SettingsView />}
           {currentTab === 'users' && <UsersView />}
           {currentTab === 'audit-logs' && <SettingsView />}
+          {currentTab === 'subscription' && <SubscriptionView subscription={subscription} />}
 
           {/* Phase 2 Finance Module Routes */}
           {currentTab === 'finance' && <FinanceView initialSubTab="overview" />}

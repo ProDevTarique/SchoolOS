@@ -43,6 +43,7 @@ export type NavItemKey =
   | 'school-settings'
   | 'users'
   | 'audit-logs'
+  | 'subscription'
   // Phase 2 Finance Nav Items
   | 'finance'
   | 'finance-structures'
@@ -605,6 +606,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               System Admin
             </div>
           </div>
+
+          <button
+            id="nav-btn-subscription"
+            onClick={() => handleNav('subscription')}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-left transition-colors ${
+              isActive('subscription')
+                ? 'bg-indigo-600 text-white font-semibold shadow-xs'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 shrink-0" />
+            <span>Subscription &amp; Billing</span>
+          </button>
 
           {/* School Settings */}
           {hasPermission('school_settings.view') && (

@@ -19,6 +19,58 @@ service cloud.firestore {
     function sameSchool() {
       return schoolMember(resource.data.schoolId);
     }
+    // --- Subscription entitlement (P1-B) ---
+    // Mirrors the client-side evaluateSubscription() state machine so that
+    // Firestore itself (not just the React UI) enforces access for
+    // SUSPENDED/CANCELLED/expired/malformed/missing subscriptions. Dates are
+    // stored as native Firestore Timestamps (not ISO strings) because rules
+    // have no string-to-timestamp parser and can only compare request.time
+    // against timestamp-typed fields.
+    function subscriptionExists(schoolId) {
+      return exists(/databases/$(database)/documents/schoolSubscriptions/$(schoolId));
+    }
+    function subscriptionData(schoolId) {
+      return get(/databases/$(database)/documents/schoolSubscriptions/$(schoolId)).data;
+    }
+    function validSubscriptionShape(data) {
+      return data.schoolId is string
+        && data.planId is string
+        && data.status is string
+        && data.currentPeriodEnd is timestamp
+        && data.provider is string;
+    }
+    function withinGrace(data) {
+      return ('gracePeriodEnd' in data) && data.gracePeriodEnd is timestamp
+        && request.time <= data.gracePeriodEnd;
+    }
+    function subscriptionEntitled(schoolId) {
+      return subscriptionExists(schoolId)
+        && validSubscriptionShape(subscriptionData(schoolId))
+        && (
+          (subscriptionData(schoolId).status in ['TRIAL', 'ACTIVE']
+            && (request.time <= subscriptionData(schoolId).currentPeriodEnd || withinGrace(subscriptionData(schoolId))))
+          || (subscriptionData(schoolId).status == 'PAST_DUE'
+            && (request.time <= subscriptionData(schoolId).currentPeriodEnd || withinGrace(subscriptionData(schoolId))))
+          || (subscriptionData(schoolId).status == 'GRACE_PERIOD' && withinGrace(subscriptionData(schoolId)))
+        );
+    }
+    // Full entitlement check for operational data: correct school AND an
+    // active/eligible subscription. Role permissions are applied separately
+    // and unchanged - this never replaces them, only adds a further condition.
+    function entitled(schoolId) {
+      return schoolMember(schoolId) && subscriptionEntitled(schoolId);
+    }
+    // One-time bootstrap exemption for the legitimate SetupWizard flow of a
+    // brand-new school. It applies ONLY to `create` operations (never read or
+    // update) for a document that does not yet exist, ONLY for that school's
+    // own freshly-registered SUPER_ADMIN, and ONLY while no subscription
+    // document exists yet for that school. Once any schoolSubscriptions/{id}
+    // document exists (e.g. SUSPENDED, CANCELLED, or any other status), this
+    // can never fire again for that school - it cannot be replayed to regain
+    // access, and it never grants read access to pre-existing data.
+    function newSchoolBootstrap(schoolId) {
+      return role('SUPER_ADMIN') && profile().schoolId == schoolId && !subscriptionExists(schoolId);
+    }
     function incomingSchool() {
       return schoolMember(request.resource.data.schoolId);
     }
@@ -242,45 +294,56 @@ service cloud.firestore {
     }
 
     match /academicSessions/{id} {
-      allow read: if schoolReader() && sameSchool();
-      allow create, update: if manager() && incomingSchool() && validId(id);
+      allow read: if schoolReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create: if manager() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if manager() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
       allow delete: if false;
     }
     match /classes/{id} {
-      allow read: if schoolReader() && sameSchool();
-      allow create, update: if manager() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if schoolReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create: if manager() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if manager() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /sections/{id} {
-      allow read: if schoolReader() && sameSchool();
-      allow create, update: if manager() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if schoolReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create: if manager() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if manager() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /subjects/{id} {
-      allow read: if schoolReader() && sameSchool();
-      allow create, update: if manager() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if schoolReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create: if manager() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if manager() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /students/{id} {
-      allow read: if studentReader() && schoolMember(resource.data.schoolId);
-      allow create: if staff() && incomingSchool() && validId(id);
-      allow update: if staff() && sameSchool() && incomingSchool();
-      allow delete: if manager() && sameSchool();
+      allow read: if studentReader() && schoolMember(resource.data.schoolId) && entitled(resource.data.schoolId);
+      allow create: if staff() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if staff() && sameSchool() && incomingSchool() && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /staff/{id} {
-      allow read: if staffReader() && schoolMember(resource.data.schoolId);
-      allow create, update: if manager() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if staffReader() && schoolMember(resource.data.schoolId) && entitled(resource.data.schoolId);
+      allow create: if manager() && incomingSchool() && validId(id)
+        && (entitled(request.resource.data.schoolId) || newSchoolBootstrap(request.resource.data.schoolId));
+      allow update: if manager() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /attendance/{id} {
-      allow read: if staffReader() && sameSchool();
-      allow create, update: if staff() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if staffReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create, update: if staff() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /attendanceDaily/{id} {
-      allow read: if staffReader() && sameSchool();
-      allow create, update: if staff() && incomingSchool() && validId(id);
-      allow delete: if manager() && sameSchool();
+      allow read: if staffReader() && sameSchool() && entitled(resource.data.schoolId);
+      allow create, update: if staff() && incomingSchool() && validId(id) && entitled(request.resource.data.schoolId);
+      allow delete: if manager() && sameSchool() && entitled(resource.data.schoolId);
     }
     match /settings/{schoolId} {
       allow read: if schoolMember(schoolId);
@@ -291,6 +354,16 @@ service cloud.firestore {
       allow read: if manager() && sameSchool();
       allow create: if staff() && incomingSchool() && validId(id);
       allow update, delete: if false;
+    }
+
+    // Subscription state is readable by the associated school only. Writes
+    // are reserved for a trusted Admin SDK/webhook boundary, not the browser.
+    match /schoolSubscriptions/{schoolId} {
+      allow read: if schoolMember(schoolId);
+      allow create, update, delete: if false;
+    }
+    match /platformAdmins/{uid} {
+      allow read, write: if false;
     }
 
     match /financialSettings/{id} {

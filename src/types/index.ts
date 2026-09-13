@@ -1,3 +1,5 @@
+import type { Timestamp } from 'firebase/firestore';
+
 export type Role =
   | 'SUPER_ADMIN'
   | 'ADMIN'
@@ -7,6 +9,48 @@ export type Role =
   | 'RECEPTIONIST'
   | 'TRANSPORT_MANAGER'
   | 'PARENT';
+
+export type SubscriptionStatus =
+  | 'TRIAL'
+  | 'ACTIVE'
+  | 'PAST_DUE'
+  | 'GRACE_PERIOD'
+  | 'SUSPENDED'
+  | 'CANCELLED';
+
+export type SubscriptionProvider = 'NONE' | 'RAZORPAY' | 'STRIPE' | 'OTHER';
+
+export interface SchoolSubscription {
+  schoolId: string;
+  planId: string;
+  planName?: string;
+  status: SubscriptionStatus;
+  // Stored as native Firestore Timestamps (not ISO strings): Firestore
+  // security rules can only compare request.time against timestamp-typed
+  // fields, which is what lets Firestore itself enforce entitlement.
+  startedAt: Timestamp;
+  currentPeriodStart: Timestamp;
+  currentPeriodEnd: Timestamp;
+  gracePeriodEnd?: Timestamp;
+  provider: SubscriptionProvider;
+  providerCustomerId?: string;
+  providerSubscriptionId?: string;
+  updatedAt: Timestamp;
+}
+
+export type EntitlementState =
+  | 'LOADING'
+  | 'ENTITLED'
+  | 'GRACE'
+  | 'SUSPENDED'
+  | 'CANCELLED'
+  | 'MISSING_CONFIGURATION'
+  | 'ERROR';
+
+export interface SubscriptionEntitlement {
+  state: EntitlementState;
+  reason: string;
+}
 
 export type Permission =
   | 'students.view'

@@ -3,7 +3,8 @@ import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { getUserProfile, logoutUser } from '../services/authService';
 import { getSchoolById } from '../services/schoolService';
-import { UserProfile, School, Permission, ROLE_PERMISSIONS } from '../types';
+import { UserProfile, School, Permission, ROLE_PERMISSIONS, SchoolSubscription, SubscriptionEntitlement } from '../types';
+import { evaluateSubscription, getSchoolSubscription } from '../services/subscriptionService';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -11,10 +12,14 @@ interface AuthContextType {
   school: School | null;
   loading: boolean;
   schoolLoading: boolean;
+  subscription: SchoolSubscription | null;
+  subscriptionLoading: boolean;
+  entitlement: SubscriptionEntitlement;
   hasPermission: (permission: Permission) => boolean;
   logout: () => Promise<void>;
   reloadSchool: () => Promise<void>;
   reloadProfile: () => Promise<void>;
+  reloadSubscription: () => Promise<void>;
   setManualSchool: (school: School | null) => void;
 }
 
@@ -26,6 +31,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
   const [schoolLoading, setSchoolLoading] = useState(true);
+  const [subscription, setSubscription] = useState<SchoolSubscription | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [entitlement, setEntitlement] = useState<SubscriptionEntitlement>({
+    state: 'LOADING',
+    reason: 'Loading subscription entitlement.',
+  });
+
+  const loadSubscription = async (schoolId: string | undefined) => {
+    setSubscriptionLoading(true);
+    setEntitlement({ state: 'LOADING', reason: 'Loading subscription entitlement.' });
+    if (!schoolId) {
+      setSubscription(null);
+      setEntitlement({ state: 'MISSING_CONFIGURATION', reason: 'No school is associated with this account.' });
+      setSubscriptionLoading(false);
+      return;
+    }
+    try {
+      const currentSubscription = await getSchoolSubscription(schoolId);
+      setSubscription(currentSubscription);
+      setEntitlement(evaluateSubscription(currentSubscription));
+    } catch (err) {
+      console.error('Failed to load subscription entitlement:', err);
+      setSubscription(null);
+      setEntitlement({ state: 'ERROR', reason: 'Subscription status could not be verified.' });
+    } finally {
+      setSubscriptionLoading(false);
+    }
+  };
 
   // Load active school
   const loadSchool = async () => {
@@ -59,9 +92,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const sch = await getSchoolById(userProf.schoolId);
               if (sch) setSchool(sch);
             }
+            await loadSubscription(userProf.schoolId);
           } else {
             setProfile(null);
             setSchool(null);
+            await loadSubscription(undefined);
             if (userProf) {
               await logoutUser();
             }
@@ -70,10 +105,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error('Error fetching user profile:', err);
           setProfile(null);
           setSchool(null);
+          await loadSubscription(undefined);
         }
       } else {
         setProfile(null);
         setSchool(null);
+        await loadSubscription(undefined);
       }
       setSchoolLoading(false);
       setLoading(false);
@@ -94,6 +131,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setProfile(null);
     setCurrentUser(null);
     setSchool(null);
+    setSubscription(null);
+    setEntitlement({ state: 'MISSING_CONFIGURATION', reason: 'No school is associated with this account.' });
   };
 
   const reloadSchool = async () => {
@@ -105,9 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const p = await getUserProfile(auth.currentUser.uid);
       if (p && p.status === 'ACTIVE') {
         setProfile(p);
-        if (p.schoolId) setSchool(await getSchoolById(p.schoolId));
+        if (p.schoolId) {
+          setSchool(await getSchoolById(p.schoolId));
+          await loadSubscription(p.schoolId);
+        }
       }
     }
+  };
+
+  const reloadSubscription = async () => {
+    await loadSubscription(profile?.schoolId);
   };
 
   const setManualSchool = (s: School | null) => {
@@ -122,10 +168,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         school,
         loading,
         schoolLoading,
+        subscription,
+        subscriptionLoading,
+        entitlement,
         hasPermission,
         logout: handleLogout,
         reloadSchool,
         reloadProfile,
+        reloadSubscription,
         setManualSchool,
       }}
     >
