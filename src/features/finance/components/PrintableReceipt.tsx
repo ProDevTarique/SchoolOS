@@ -77,7 +77,7 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({ receipt, sch
             )}
             <div>
               <h1 className="text-xl font-bold tracking-tight text-slate-950 uppercase">
-                {school?.name || 'SchoolOS Institutional ERP'}
+                {school?.name || 'TalimOS Institutional ERP'}
               </h1>
               <p className="text-xs text-slate-600 mt-0.5 max-w-md leading-relaxed">
                 {school?.address ? `${school.address}, ` : ''}
@@ -285,7 +285,7 @@ export const PrintableReceipt: React.FC<PrintableReceiptProps> = ({ receipt, sch
         <div className="flex justify-between items-end text-xs text-slate-500">
           <div>
             <div className="text-[10px] text-slate-400">
-              Computer Generated Receipt • SchoolOS ERP
+              Computer Generated Receipt • TalimOS ERP
             </div>
             <div className="text-[10px] text-slate-400">
               Generated on {new Date(receipt.createdAt).toLocaleString('en-IN')}

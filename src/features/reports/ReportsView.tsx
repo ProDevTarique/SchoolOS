@@ -408,7 +408,7 @@ export const ReportsView: React.FC = () => {
                 Operational Overview
               </h3>
               <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                SchoolOS core operational parameters are currently operating in good standing. All academic structures (sessions, classes, sections, and subjects) are synced with the Firestore database.
+                TalimOS core operational parameters are currently operating in good standing. All academic structures (sessions, classes, sections, and subjects) are synced with the Firestore database.
               </p>
             </div>
 

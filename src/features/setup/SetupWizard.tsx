@@ -42,15 +42,15 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => 
   const [state, setState] = useState('Delhi');
   const [pinCode, setPinCode] = useState('110022');
   const [phone, setPhone] = useState('+91 11 2617 0000');
-  const [email, setEmail] = useState('admin@schoolos.demo');
-  const [website, setWebsite] = useState('https://dps.schoolos.edu');
+  const [email, setEmail] = useState('admin@talimos.demo');
+  const [website, setWebsite] = useState('https://dps.talimos.edu');
   const [principalName, setPrincipalName] = useState('Dr. S. K. Sharma');
   const [schoolMotto, setSchoolMotto] = useState('Service Before Self');
   const [academicSession, setAcademicSession] = useState('2025-26');
 
   // Step 2: Administrator
   const [adminName, setAdminName] = useState('System Administrator');
-  const [adminEmail, setAdminEmail] = useState('admin@schoolos.demo');
+  const [adminEmail, setAdminEmail] = useState('admin@talimos.demo');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -239,7 +239,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => 
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              SchoolOS
+              TalimOS
             </h1>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               School Management &amp; Administration System
@@ -551,7 +551,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => 
                     required
                     value={adminEmail}
                     onChange={(e) => setAdminEmail(e.target.value)}
-                    placeholder="admin@schoolos.demo"
+                    placeholder="admin@talimos.demo"
                     className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-hidden"
                   />
                 </div>
@@ -805,7 +805,7 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => 
                   className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm transition-colors shadow-xs disabled:opacity-50"
                 >
                   {loading ? (
-                    <span>Configuring SchoolOS...</span>
+                    <span>Configuring TalimOS...</span>
                   ) : (
                     <>
                       <span>Complete School Setup</span>

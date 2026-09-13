@@ -115,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             <div>
               <div className="font-bold tracking-tight text-white text-lg leading-tight">
-                SchoolOS
+                TalimOS
               </div>
               <div className="text-[10px] text-slate-400 uppercase tracking-widest font-medium">
                 Admin ERP
@@ -657,7 +657,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer info */}
         <div className="p-3 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-          SchoolOS v1.0 • Phase 1
+          TalimOS v1.0 • Phase 1
         </div>
       </aside>
     </>

@@ -1,5 +1,5 @@
 {
-  "name": "SchoolOS",
+  "name": "TalimOS",
   "description": "School Management & Administration System",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

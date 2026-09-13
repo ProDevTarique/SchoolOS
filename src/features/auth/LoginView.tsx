@@ -65,7 +65,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
         </div>
 
         <h2 className="text-center text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-          {school?.name || 'SchoolOS'}
+          {school?.name || 'TalimOS'}
         </h2>
         <p className="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
           School Management &amp; Administration System
@@ -152,7 +152,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   <span>Signing In...</span>
                 ) : (
                   <>
-                    <span>Sign In to SchoolOS</span>
+                    <span>Sign In to TalimOS</span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

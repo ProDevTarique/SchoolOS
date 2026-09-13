@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({ onToggleMobileSidebar }) => {
           )}
           <div>
             <span className="font-semibold text-sm sm:text-base text-slate-900 dark:text-slate-100">
-              {school?.name || 'SchoolOS ERP'}
+              {school?.name || 'TalimOS ERP'}
             </span>
             {school?.principalName && (
               <span className="text-xs text-slate-500 dark:text-slate-400 hidden md:inline ml-2 pl-2 border-l border-slate-300 dark:border-slate-700">

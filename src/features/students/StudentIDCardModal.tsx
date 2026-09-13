@@ -60,7 +60,7 @@ export const StudentIDCardModal: React.FC<StudentIDCardModalProps> = ({
             {/* Top School Band */}
             <div className="bg-indigo-900 text-white p-3 text-center">
               <div className="font-bold text-xs uppercase tracking-wider line-clamp-1">
-                {school?.name || 'SchoolOS Academy'}
+                {school?.name || 'TalimOS Academy'}
               </div>
               <div className="text-[9px] text-indigo-200 line-clamp-1 mt-0.5">
                 {[school?.city, school?.state].filter(Boolean).join(', ')}

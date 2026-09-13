@@ -124,11 +124,11 @@ export async function loadDemoSchoolData(schoolId: string, adminUserId: string, 
 
   // 5. Teachers: 5 teachers
   const teachers = [
-    { name: 'Dr. Ramesh Chandra', empId: 'TCH-001', desig: 'Senior Math Teacher', dept: 'Mathematics', phone: '+91 9811223344', email: 'ramesh.chandra@schoolos.demo' },
-    { name: 'Mrs. Sunita Verma', empId: 'TCH-002', desig: 'Science Faculty', dept: 'Science', phone: '+91 9811223345', email: 'sunita.verma@schoolos.demo' },
-    { name: 'Mr. Arvind Joshi', empId: 'TCH-003', desig: 'English Teacher', dept: 'Languages', phone: '+91 9811223346', email: 'arvind.joshi@schoolos.demo' },
-    { name: 'Ms. Priya Menon', empId: 'TCH-004', desig: 'Social Studies Teacher', dept: 'Social Studies', phone: '+91 9811223347', email: 'priya.menon@schoolos.demo' },
-    { name: 'Mr. Alok Mishra', empId: 'TCH-005', desig: 'Hindi Faculty', dept: 'Languages', phone: '+91 9811223348', email: 'alok.mishra@schoolos.demo' },
+    { name: 'Dr. Ramesh Chandra', empId: 'TCH-001', desig: 'Senior Math Teacher', dept: 'Mathematics', phone: '+91 9811223344', email: 'ramesh.chandra@talimos.demo' },
+    { name: 'Mrs. Sunita Verma', empId: 'TCH-002', desig: 'Science Faculty', dept: 'Science', phone: '+91 9811223345', email: 'sunita.verma@talimos.demo' },
+    { name: 'Mr. Arvind Joshi', empId: 'TCH-003', desig: 'English Teacher', dept: 'Languages', phone: '+91 9811223346', email: 'arvind.joshi@talimos.demo' },
+    { name: 'Ms. Priya Menon', empId: 'TCH-004', desig: 'Social Studies Teacher', dept: 'Social Studies', phone: '+91 9811223347', email: 'priya.menon@talimos.demo' },
+    { name: 'Mr. Alok Mishra', empId: 'TCH-005', desig: 'Hindi Faculty', dept: 'Languages', phone: '+91 9811223348', email: 'alok.mishra@talimos.demo' },
   ];
 
   teachers.forEach((t, i) => {

@@ -29,7 +29,7 @@ const SchoolOSApp: React.FC = () => {
         <div className="w-14 h-14 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 mb-4 animate-pulse">
           <GraduationCap className="w-8 h-8" />
         </div>
-        <h2 className="text-lg font-bold text-white tracking-tight">SchoolOS Enterprise ERP</h2>
+        <h2 className="text-lg font-bold text-white tracking-tight">TalimOS Enterprise ERP</h2>
         <p className="text-xs text-slate-400 mt-1 flex items-center gap-2">
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-400" />
           <span>Synchronizing institutional security &amp; records...</span>
