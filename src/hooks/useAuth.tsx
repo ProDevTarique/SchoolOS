@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { getUserProfile, logoutUser } from '../services/authService';
-import { getFirstConfiguredSchool, getSchoolById } from '../services/schoolService';
+import { getSchoolById } from '../services/schoolService';
 import { UserProfile, School, Permission, ROLE_PERMISSIONS } from '../types';
 
 interface AuthContextType {
@@ -16,42 +16,28 @@ interface AuthContextType {
   reloadSchool: () => Promise<void>;
   reloadProfile: () => Promise<void>;
   setManualSchool: (school: School | null) => void;
-  setManualProfile: (profile: UserProfile | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(() => {
-    try {
-      const cached = localStorage.getItem('schoolos_cached_profile');
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [school, setSchool] = useState<School | null>(() => {
-    try {
-      const cached = localStorage.getItem('schoolos_cached_school');
-      return cached ? JSON.parse(cached) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [school, setSchool] = useState<School | null>(null);
   const [loading, setLoading] = useState(true);
-  const [schoolLoading, setSchoolLoading] = useState(!Boolean(localStorage.getItem('schoolos_cached_school')));
+  const [schoolLoading, setSchoolLoading] = useState(true);
 
   // Load active school
   const loadSchool = async () => {
     try {
       setSchoolLoading(true);
-      const activeSchool = await getFirstConfiguredSchool();
-      if (activeSchool) {
-        setSchool(activeSchool);
-        try {
-          localStorage.setItem('schoolos_cached_school', JSON.stringify(activeSchool));
-        } catch {}
+      if (!auth.currentUser) {
+        setSchool(null);
+        return;
+      }
+      const userProf = await getUserProfile(auth.currentUser.uid);
+      if (userProf?.schoolId) {
+        setSchool(await getSchoolById(userProf.schoolId));
       }
     } catch (err) {
       console.error('Failed to load school profile:', err);
@@ -60,36 +46,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  useEffect(() => {
-    loadSchool();
-  }, []);
-
   // Listen to Firebase Auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setCurrentUser(fbUser);
-      const savedLocalUid = localStorage.getItem('schoolos_session_uid');
-      const targetUid = fbUser ? fbUser.uid : savedLocalUid;
-
-      if (targetUid) {
+      if (fbUser) {
         try {
-          const userProf = await getUserProfile(targetUid);
-          if (userProf) {
+          const userProf = await getUserProfile(fbUser.uid);
+          if (userProf && userProf.status === 'ACTIVE') {
             setProfile(userProf);
-            if (userProf?.schoolId && (!school || school.id !== userProf.schoolId)) {
+            if (userProf.schoolId) {
               const sch = await getSchoolById(userProf.schoolId);
               if (sch) setSchool(sch);
+            }
+          } else {
+            setProfile(null);
+            setSchool(null);
+            if (userProf) {
+              await logoutUser();
             }
           }
         } catch (err) {
           console.error('Error fetching user profile:', err);
+          setProfile(null);
+          setSchool(null);
         }
       } else {
-        const cached = localStorage.getItem('schoolos_cached_profile');
-        if (!cached) {
-          setProfile(null);
-        }
+        setProfile(null);
+        setSchool(null);
       }
+      setSchoolLoading(false);
       setLoading(false);
     });
 
@@ -107,10 +93,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await logoutUser();
     setProfile(null);
     setCurrentUser(null);
-    try {
-      localStorage.removeItem('schoolos_session_uid');
-      localStorage.removeItem('schoolos_cached_profile');
-    } catch {}
+    setSchool(null);
   };
 
   const reloadSchool = async () => {
@@ -118,36 +101,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const reloadProfile = async () => {
-    const savedLocalUid = localStorage.getItem('schoolos_session_uid');
-    const targetUid = auth.currentUser?.uid || savedLocalUid;
-    if (targetUid) {
-      const p = await getUserProfile(targetUid);
-      if (p) setProfile(p);
+    if (auth.currentUser) {
+      const p = await getUserProfile(auth.currentUser.uid);
+      if (p && p.status === 'ACTIVE') {
+        setProfile(p);
+        if (p.schoolId) setSchool(await getSchoolById(p.schoolId));
+      }
     }
   };
 
   const setManualSchool = (s: School | null) => {
     setSchool(s);
-    try {
-      if (s) {
-        localStorage.setItem('schoolos_cached_school', JSON.stringify(s));
-      } else {
-        localStorage.removeItem('schoolos_cached_school');
-      }
-    } catch {}
-  };
-
-  const setManualProfile = (p: UserProfile | null) => {
-    setProfile(p);
-    try {
-      if (p) {
-        localStorage.setItem('schoolos_cached_profile', JSON.stringify(p));
-        localStorage.setItem('schoolos_session_uid', p.id || p.uid);
-      } else {
-        localStorage.removeItem('schoolos_cached_profile');
-        localStorage.removeItem('schoolos_session_uid');
-      }
-    } catch {}
   };
 
   return (
@@ -163,7 +127,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reloadSchool,
         reloadProfile,
         setManualSchool,
-        setManualProfile,
       }}
     >
       {children}

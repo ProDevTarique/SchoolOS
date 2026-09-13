@@ -13,6 +13,7 @@ import { AttendanceView } from './features/attendance/AttendanceView';
 import { ReportsView } from './features/reports/ReportsView';
 import { SettingsView } from './features/settings/SettingsView';
 import { UsersView } from './features/users/UsersView';
+import { FinanceView } from './features/finance/FinanceView';
 import { GraduationCap, RefreshCw } from 'lucide-react';
 
 const SchoolOSApp: React.FC = () => {
@@ -112,6 +113,20 @@ const SchoolOSApp: React.FC = () => {
           {currentTab === 'school-settings' && <SettingsView />}
           {currentTab === 'users' && <UsersView />}
           {currentTab === 'audit-logs' && <SettingsView />}
+
+          {/* Phase 2 Finance Module Routes */}
+          {currentTab === 'finance' && <FinanceView initialSubTab="overview" />}
+          {currentTab === 'finance-structures' && <FinanceView initialSubTab="structures" />}
+          {currentTab === 'finance-student-fees' && <FinanceView initialSubTab="student-fees" />}
+          {currentTab === 'finance-collect' && <FinanceView initialSubTab="collect" />}
+          {currentTab === 'finance-payments' && <FinanceView initialSubTab="payments" />}
+          {currentTab === 'finance-defaulters' && <FinanceView initialSubTab="defaulters" />}
+          {currentTab === 'finance-discounts' && <FinanceView initialSubTab="discounts" />}
+          {currentTab === 'finance-receipts' && <FinanceView initialSubTab="receipts" />}
+          {currentTab === 'finance-expenses' && <FinanceView initialSubTab="expenses" />}
+          {currentTab === 'finance-accounts' && <FinanceView initialSubTab="accounts" />}
+          {currentTab === 'finance-reports' && <FinanceView initialSubTab="reports" />}
+          {currentTab === 'finance-settings' && <FinanceView initialSubTab="settings" />}
         </main>
       </div>
     </div>

@@ -22,6 +22,9 @@ import { getTodayAttendanceSummary } from '../../services/attendanceService';
 import { getAuditLogs } from '../../services/auditService';
 import { Student, StaffMember, AuditLog } from '../../types';
 import { NavItemKey } from '../../components/layout/Sidebar';
+import { IndianRupee, CreditCard } from 'lucide-react';
+import { getFinanceDashboardMetrics, FinanceDashboardMetrics } from '../finance/services/financeReportsService';
+import { formatINR } from '../finance/utils/currencyUtils';
 
 interface DashboardViewProps {
   onNavigate: (tab: NavItemKey) => void;
@@ -38,6 +41,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const [totalClasses, setTotalClasses] = useState(0);
   const [totalSections, setTotalSections] = useState(0);
   const [activeSessionName, setActiveSessionName] = useState('2025-26');
+
+  // Finance Stats
+  const [financeMetrics, setFinanceMetrics] = useState<FinanceDashboardMetrics | null>(null);
 
   // Widgets
   const [recentStudents, setRecentStudents] = useState<Student[]>([]);
@@ -95,6 +101,16 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         setRecentStudents(sortedStudents.slice(0, 5));
         setAttendanceSummary(todayAtt);
         setRecentAuditLogs(logs);
+
+        // Optional finance metrics if user has permissions
+        if (hasPermission('fees.view')) {
+          try {
+            const fm = await getFinanceDashboardMetrics(school.id);
+            setFinanceMetrics(fm);
+          } catch (fErr) {
+            console.warn('Finance metrics error on dashboard:', fErr);
+          }
+        }
       } catch (err) {
         console.error('Failed to load dashboard data:', err);
       } finally {
@@ -155,6 +171,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             >
               <FileBarChart className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
               <span>Reports</span>
+            </button>
+          )}
+
+          {hasPermission('fees.collect') && (
+            <button
+              id="dash-quick-collect-fee"
+              onClick={() => onNavigate('finance-collect')}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>Collect Fee</span>
             </button>
           )}
         </div>
@@ -237,6 +264,64 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
           </div>
         </div>
       </div>
+
+      {/* Finance Overview Strip (For authorized roles) */}
+      {financeMetrics && hasPermission('fees.view') && (
+        <div className="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-xl p-5 text-white shadow-xs border border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-indigo-900/50">
+            <div className="flex items-center gap-2">
+              <div className="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">
+                <IndianRupee className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold tracking-tight">Finance & Fee Snapshot</h3>
+                <p className="text-[11px] text-slate-400">Institutional fee collections, dues & cash position</p>
+              </div>
+            </div>
+            <button
+              onClick={() => onNavigate('finance')}
+              className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-300 hover:text-white transition-colors self-start sm:self-auto"
+            >
+              <span>View Finance Hub</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+            <div>
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Today&apos;s Collection</span>
+              <div className="text-xl font-bold text-emerald-400 mt-1">
+                {formatINR(financeMetrics.todayCollection)}
+              </div>
+              <span className="text-[10px] text-slate-400">Cash, UPI, Cheque, Bank</span>
+            </div>
+
+            <div>
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Month Collection</span>
+              <div className="text-xl font-bold text-white mt-1">
+                {formatINR(financeMetrics.monthCollection)}
+              </div>
+              <span className="text-[10px] text-slate-400">Current calendar month</span>
+            </div>
+
+            <div>
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Outstanding Dues</span>
+              <div className="text-xl font-bold text-rose-400 mt-1">
+                {formatINR(financeMetrics.outstandingFees)}
+              </div>
+              <span className="text-[10px] text-slate-400">Pending & overdue fee items</span>
+            </div>
+
+            <div>
+              <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Net Cash Position</span>
+              <div className={`text-xl font-bold mt-1 ${financeMetrics.netIncome >= 0 ? 'text-indigo-300' : 'text-rose-400'}`}>
+                {formatINR(financeMetrics.netIncome)}
+              </div>
+              <span className="text-[10px] text-slate-400">Total inflow minus expenses</span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Main Grid: Attendance Summary & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

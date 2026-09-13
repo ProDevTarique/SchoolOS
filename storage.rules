@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() { return request.auth != null; }
+    function profile() {
+      return signedIn()
+        ? firestore.get(/databases/ai-studio-721cffc9-89e0-4f2f-836e-51286689d46d/documents/users/$(request.auth.uid)).data
+        : {};
+    }
+    function schoolMember(schoolId) {
+      return signedIn() && profile().schoolId == schoolId;
+    }
+    match /schools/{schoolId}/{allPaths=**} {
+      allow read: if schoolMember(schoolId);
+      allow write: if schoolMember(schoolId)
+        && request.resource.size < 10 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*|application/pdf');
+    }
+    match /{allPaths=**} { allow read, write: if false; }
+  }
+}

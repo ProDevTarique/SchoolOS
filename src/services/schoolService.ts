@@ -30,17 +30,9 @@ export async function getFirstConfiguredSchool(): Promise<School | null> {
       id: docData.id,
       ...(data as Omit<School, 'id'>),
     };
-    try {
-      localStorage.setItem('schoolos_cached_school', JSON.stringify(result));
-    } catch {}
     return result;
   } catch (err) {
-    console.warn('Could not query schools collection directly:', err);
-    try {
-      const cached = localStorage.getItem('schoolos_cached_school');
-      if (cached) return JSON.parse(cached);
-    } catch {}
-    return null;
+    handleFirestoreError(err, OperationType.GET, SCHOOLS_COLLECTION);
   }
 }
 
@@ -53,20 +45,9 @@ export async function getSchoolById(schoolId: string): Promise<School | null> {
       id: snap.id,
       ...(snap.data() as Omit<School, 'id'>),
     };
-    try {
-      localStorage.setItem('schoolos_cached_school', JSON.stringify(result));
-    } catch {}
     return result;
   } catch (err) {
-    console.warn('Could not fetch school by ID:', err);
-    try {
-      const cached = localStorage.getItem('schoolos_cached_school');
-      if (cached) {
-        const s = JSON.parse(cached);
-        if (s.id === schoolId) return s;
-      }
-    } catch {}
-    return null;
+    handleFirestoreError(err, OperationType.GET, `${SCHOOLS_COLLECTION}/${schoolId}`);
   }
 }
 

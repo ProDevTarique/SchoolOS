@@ -469,7 +469,7 @@ export const StudentsListView: React.FC<StudentsListViewProps> = ({
                         <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold ${
                           st.status === 'ACTIVE'
                             ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400'
-                            : st.status === 'SUSPENDED' || st.status === 'EXPELLED'
+                            : st.status === 'WITHDRAWN' || st.status === 'TRANSFERRED'
                             ? 'bg-rose-50 text-rose-700'
                             : 'bg-slate-100 text-slate-600'
                         }`}>

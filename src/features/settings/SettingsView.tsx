@@ -412,7 +412,7 @@ export const SettingsView: React.FC = () => {
               </div>
             </div>
 
-            {hasPermission('settings.manage') && (
+            {hasPermission('school_settings.manage') && (
               <div className="flex justify-end pt-4 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="submit"

@@ -9,7 +9,7 @@ interface LoginViewProps {
 }
 
 export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
-  const { school, reloadProfile, setManualProfile } = useAuth();
+  const { school } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,7 +26,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
     setErrorMessage(null);
     try {
       const userProfile = await loginUser(email.trim(), password);
-      setManualProfile(userProfile);
       onLoginSuccess();
     } catch (err: any) {
       console.error('Login error:', err);

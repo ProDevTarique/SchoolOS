@@ -61,9 +61,18 @@ export const AcademicsView: React.FC<AcademicsViewProps> = ({ initialSubTab = 's
 
   // Form states
   const [sessionForm, setSessionForm] = useState({ name: '', startDate: '', endDate: '', isActive: false });
-  const [classForm, setClassForm] = useState({ name: '', code: '', capacity: 40, classTeacherId: '', status: 'ACTIVE' as const });
-  const [sectionForm, setSectionForm] = useState({ classId: '', name: '', room: '', capacity: 35, classTeacherId: '', status: 'ACTIVE' as const });
-  const [subjectForm, setSubjectForm] = useState({
+  const [classForm, setClassForm] = useState<{ name: string; code: string; capacity: number; classTeacherId: string; status: ClassItem['status'] }>({ name: '', code: '', capacity: 40, classTeacherId: '', status: 'ACTIVE' });
+  const [sectionForm, setSectionForm] = useState<{ classId: string; name: string; room: string; capacity: number; classTeacherId: string; status: SectionItem['status'] }>({ classId: '', name: '', room: '', capacity: 35, classTeacherId: '', status: 'ACTIVE' });
+  const [subjectForm, setSubjectForm] = useState<{
+    name: string;
+    code: string;
+    type: SubjectItem['type'];
+    maxMarks: number;
+    passMarks: number;
+    isPractical: boolean;
+    assignedClassIds: string[];
+    status: SubjectItem['status'];
+  }>({
     name: '',
     code: '',
     type: 'CORE' as const,

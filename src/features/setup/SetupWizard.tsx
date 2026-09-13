@@ -29,7 +29,7 @@ interface SetupWizardProps {
 }
 
 export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => {
-  const { setManualSchool, setManualProfile } = useAuth();
+  const { setManualSchool } = useAuth();
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -221,7 +221,6 @@ export const SetupWizard: React.FC<SetupWizardProps> = ({ onSetupComplete }) => 
       }
 
       setManualSchool(schoolData);
-      setManualProfile(adminProfile);
       setStep(4);
     } catch (err: any) {
       console.error('Setup failed:', err);

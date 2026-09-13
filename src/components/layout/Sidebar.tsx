@@ -17,6 +17,13 @@ import {
   BookOpen,
   Calendar,
   X,
+  CreditCard,
+  IndianRupee,
+  ReceiptText,
+  FileText,
+  Award,
+  AlertTriangle,
+  Clock,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -35,7 +42,20 @@ export type NavItemKey =
   | 'reports'
   | 'school-settings'
   | 'users'
-  | 'audit-logs';
+  | 'audit-logs'
+  // Phase 2 Finance Nav Items
+  | 'finance'
+  | 'finance-structures'
+  | 'finance-student-fees'
+  | 'finance-collect'
+  | 'finance-payments'
+  | 'finance-defaulters'
+  | 'finance-discounts'
+  | 'finance-receipts'
+  | 'finance-expenses'
+  | 'finance-accounts'
+  | 'finance-reports'
+  | 'finance-settings';
 
 interface SidebarProps {
   currentTab: NavItemKey;
@@ -58,6 +78,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
     currentTab.startsWith('students-')
   );
   const [staffOpen, setStaffOpen] = useState(currentTab.startsWith('staff-'));
+  const [financeOpen, setFinanceOpen] = useState(
+    currentTab.startsWith('finance')
+  );
 
   const handleNav = (tab: NavItemKey) => {
     onSelectTab(tab);
@@ -358,6 +381,223 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <FileBarChart className="w-4 h-4 shrink-0" />
               <span>Reports</span>
             </button>
+          )}
+
+          {/* ================= FINANCE SECTION ================= */}
+          {(hasPermission('fees.view') ||
+            hasPermission('fees.collect') ||
+            hasPermission('expenses.view') ||
+            hasPermission('receipts.view')) && (
+            <div>
+              <button
+                id="nav-group-finance"
+                onClick={() => setFinanceOpen(!financeOpen)}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-left text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <CreditCard className="w-4 h-4 shrink-0 text-slate-400" />
+                  <span className="font-semibold text-white">Finance</span>
+                </div>
+                {financeOpen ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </button>
+              {financeOpen && (
+                <div className="ml-7 pl-2 border-l border-slate-800 mt-1 space-y-1">
+                  {/* Overview */}
+                  <button
+                    id="nav-btn-finance-overview"
+                    onClick={() => handleNav('finance')}
+                    className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                      isActive('finance')
+                        ? 'bg-indigo-600 text-white font-medium'
+                        : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    }`}
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    <span>Overview</span>
+                  </button>
+
+                  {/* 1. Fee Structures */}
+                  {hasPermission('fees.view') && (
+                    <button
+                      id="nav-btn-finance-structures"
+                      onClick={() => handleNav('finance-structures')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-structures')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Layers className="w-3.5 h-3.5" />
+                      <span>Fee Structures</span>
+                    </button>
+                  )}
+
+                  {/* 2. Student Fees */}
+                  {hasPermission('fees.view') && (
+                    <button
+                      id="nav-btn-finance-student-fees"
+                      onClick={() => handleNav('finance-student-fees')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-student-fees')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Users className="w-3.5 h-3.5" />
+                      <span>Student Fees</span>
+                    </button>
+                  )}
+
+                  {/* 3. Collect Fee */}
+                  {hasPermission('fees.collect') && (
+                    <button
+                      id="nav-btn-finance-collect"
+                      onClick={() => handleNav('finance-collect')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-collect')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                      <span className="text-emerald-300 font-semibold">Collect Fee</span>
+                    </button>
+                  )}
+
+                  {/* 4. Payment History */}
+                  {hasPermission('fees.view') && (
+                    <button
+                      id="nav-btn-finance-payments"
+                      onClick={() => handleNav('finance-payments')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-payments')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>Payment History</span>
+                    </button>
+                  )}
+
+                  {/* 5. Fee Defaulters */}
+                  {hasPermission('fees.view') && (
+                    <button
+                      id="nav-btn-finance-defaulters"
+                      onClick={() => handleNav('finance-defaulters')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-defaulters')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                      <span>Fee Defaulters</span>
+                    </button>
+                  )}
+
+                  {/* 6. Discounts & Scholarships */}
+                  {hasPermission('fees.view') && (
+                    <button
+                      id="nav-btn-finance-discounts"
+                      onClick={() => handleNav('finance-discounts')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-discounts')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5" />
+                      <span>Discounts &amp; Scholarships</span>
+                    </button>
+                  )}
+
+                  {/* 7. Receipts */}
+                  {hasPermission('receipts.view') && (
+                    <button
+                      id="nav-btn-finance-receipts"
+                      onClick={() => handleNav('finance-receipts')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-receipts')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Receipts</span>
+                    </button>
+                  )}
+
+                  {/* 8. Expenses */}
+                  {hasPermission('expenses.view') && (
+                    <button
+                      id="nav-btn-finance-expenses"
+                      onClick={() => handleNav('finance-expenses')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-expenses')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <ReceiptText className="w-3.5 h-3.5" />
+                      <span>Expenses</span>
+                    </button>
+                  )}
+
+                  {/* 9. Accounts (Cash Book) */}
+                  {hasPermission('accounts.view') && (
+                    <button
+                      id="nav-btn-finance-accounts"
+                      onClick={() => handleNav('finance-accounts')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-accounts')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Accounts (Cash Book)</span>
+                    </button>
+                  )}
+
+                  {/* 10. Financial Reports */}
+                  {hasPermission('reports.finance.view') && (
+                    <button
+                      id="nav-btn-finance-reports"
+                      onClick={() => handleNav('finance-reports')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-reports')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <FileBarChart className="w-3.5 h-3.5" />
+                      <span>Financial Reports</span>
+                    </button>
+                  )}
+
+                  {/* 11. Finance Settings */}
+                  {hasPermission('finance_settings.manage') && (
+                    <button
+                      id="nav-btn-finance-settings"
+                      onClick={() => handleNav('finance-settings')}
+                      className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md text-xs transition-colors ${
+                        isActive('finance-settings')
+                          ? 'bg-indigo-600 text-white font-medium'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                      }`}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      <span>Finance Settings</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           <div className="pt-3 pb-1">
