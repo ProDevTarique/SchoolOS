@@ -1,0 +1,304 @@
+{
+  "entities": {
+    "School": {
+      "title": "School",
+      "description": "School institutional profile and configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "maxLength": 200 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
+        "address": { "type": "string", "maxLength": 500 },
+        "city": { "type": "string", "maxLength": 100 },
+        "state": { "type": "string", "maxLength": 100 },
+        "pinCode": { "type": "string", "maxLength": 20 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 150 },
+        "website": { "type": "string", "maxLength": 200 },
+        "principalName": { "type": "string", "maxLength": 150 },
+        "schoolMotto": { "type": "string", "maxLength": 300 },
+        "currentSessionId": { "type": "string", "maxLength": 100 },
+        "isConfigured": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "email", "phone"]
+    },
+    "User": {
+      "title": "User",
+      "description": "ERP User account with role and status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "uid": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": {
+          "type": "string",
+          "enum": ["SUPER_ADMIN", "ADMIN", "PRINCIPAL", "TEACHER", "ACCOUNTANT", "RECEPTIONIST", "TRANSPORT_MANAGER", "PARENT"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "INACTIVE"]
+        },
+        "assignedClassIds": { "type": "array" },
+        "assignedSectionIds": { "type": "array" },
+        "assignedSubjectIds": { "type": "array" },
+        "lastLoginAt": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "name", "email", "role", "status"]
+    },
+    "AcademicSession": {
+      "title": "AcademicSession",
+      "description": "School academic session (e.g. 2025-26)",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 50 },
+        "startDate": { "type": "string" },
+        "endDate": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "isArchived": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "name", "isActive"]
+    },
+    "Class": {
+      "title": "Class",
+      "description": "Academic class definition",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "code": { "type": "string", "maxLength": 50 },
+        "sessionId": { "type": "string" },
+        "classTeacherId": { "type": "string" },
+        "capacity": { "type": "number" },
+        "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "name", "code", "status"]
+    },
+    "Section": {
+      "title": "Section",
+      "description": "Section division of an academic class",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "classId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 50 },
+        "sessionId": { "type": "string" },
+        "classTeacherId": { "type": "string" },
+        "room": { "type": "string", "maxLength": 50 },
+        "capacity": { "type": "number" },
+        "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "classId", "name", "status"]
+    },
+    "Subject": {
+      "title": "Subject",
+      "description": "Academic subject curriculum specification",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "code": { "type": "string", "maxLength": 50 },
+        "type": { "type": "string", "enum": ["CORE", "ELECTIVE", "OPTIONAL", "VOCATIONAL"] },
+        "maxMarks": { "type": "number" },
+        "passMarks": { "type": "number" },
+        "isPractical": { "type": "boolean" },
+        "assignedClassIds": { "type": "array" },
+        "status": { "type": "string", "enum": ["ACTIVE", "ARCHIVED"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "name", "code", "type", "maxMarks", "passMarks", "status"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "Student primary record and information",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "admissionNumber": { "type": "string", "maxLength": 100 },
+        "rollNumber": { "type": "string", "maxLength": 50 },
+        "fullName": { "type": "string", "maxLength": 150 },
+        "photoUrl": { "type": "string", "maxLength": 500000 },
+        "dateOfBirth": { "type": "string" },
+        "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+        "bloodGroup": { "type": "string", "maxLength": 10 },
+        "address": { "type": "string", "maxLength": 500 },
+        "city": { "type": "string", "maxLength": 100 },
+        "state": { "type": "string", "maxLength": 100 },
+        "pinCode": { "type": "string", "maxLength": 20 },
+        "sessionId": { "type": "string" },
+        "classId": { "type": "string" },
+        "sectionId": { "type": "string" },
+        "admissionDate": { "type": "string" },
+        "previousSchool": { "type": "string", "maxLength": 200 },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "INACTIVE", "TRANSFERRED", "GRADUATED", "WITHDRAWN"]
+        },
+        "fatherName": { "type": "string", "maxLength": 150 },
+        "motherName": { "type": "string", "maxLength": 150 },
+        "guardianName": { "type": "string", "maxLength": 150 },
+        "fatherPhone": { "type": "string", "maxLength": 50 },
+        "motherPhone": { "type": "string", "maxLength": 50 },
+        "guardianPhone": { "type": "string", "maxLength": 50 },
+        "parentEmail": { "type": "string", "maxLength": 150 },
+        "parentAddress": { "type": "string", "maxLength": 500 },
+        "emergencyName": { "type": "string", "maxLength": 150 },
+        "emergencyRelation": { "type": "string", "maxLength": 100 },
+        "emergencyPhone": { "type": "string", "maxLength": 50 },
+        "documents": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "admissionNumber", "fullName", "gender", "classId", "sectionId", "status"]
+    },
+    "Staff": {
+      "title": "Staff",
+      "description": "School teaching and non-teaching personnel",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "employeeId": { "type": "string", "maxLength": 100 },
+        "name": { "type": "string", "maxLength": 150 },
+        "photoUrl": { "type": "string", "maxLength": 500000 },
+        "gender": { "type": "string", "enum": ["MALE", "FEMALE", "OTHER"] },
+        "dateOfBirth": { "type": "string" },
+        "phone": { "type": "string", "maxLength": 50 },
+        "email": { "type": "string", "maxLength": 150 },
+        "address": { "type": "string", "maxLength": 500 },
+        "qualification": { "type": "string", "maxLength": 200 },
+        "designation": { "type": "string", "maxLength": 100 },
+        "department": { "type": "string", "maxLength": 100 },
+        "category": {
+          "type": "string",
+          "enum": ["Principal", "Vice Principal", "Teacher", "Accountant", "Receptionist", "Librarian", "Driver", "Conductor", "Security", "Other"]
+        },
+        "joiningDate": { "type": "string" },
+        "employmentStatus": { "type": "string", "enum": ["ACTIVE", "ON_LEAVE", "RESIGNED", "RETIRED", "TERMINATED"] },
+        "emergencyContact": { "type": "string", "maxLength": 100 },
+        "assignedClassIds": { "type": "array" },
+        "assignedSectionIds": { "type": "array" },
+        "assignedSubjectIds": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "employeeId", "name", "category", "employmentStatus"]
+    },
+    "Attendance": {
+      "title": "Attendance",
+      "description": "Student daily attendance log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "sessionId": { "type": "string" },
+        "classId": { "type": "string" },
+        "sectionId": { "type": "string" },
+        "date": { "type": "string" },
+        "recordedBy": { "type": "string" },
+        "records": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId", "classId", "sectionId", "date", "records"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable security and action audit log",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userRole": { "type": "string" },
+        "action": { "type": "string" },
+        "module": { "type": "string" },
+        "affectedRecord": { "type": "string" },
+        "description": { "type": "string", "maxLength": 1000 }
+      },
+      "required": ["schoolId", "action", "module", "description"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "School general settings and preferences",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "schoolId": { "type": "string" },
+        "academicYear": { "type": "string" },
+        "dateFormat": { "type": "string" },
+        "timezone": { "type": "string" },
+        "currency": { "type": "string" },
+        "enableDemoMode": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["schoolId"]
+    }
+  },
+  "firestore": {
+    "/schools/{schoolId}": {
+      "schema": { "$ref": "#/entities/School" },
+      "description": "Institutional information"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "System user profiles"
+    },
+    "/academicSessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/AcademicSession" },
+      "description": "Academic sessions"
+    },
+    "/classes/{classId}": {
+      "schema": { "$ref": "#/entities/Class" },
+      "description": "Classes"
+    },
+    "/sections/{sectionId}": {
+      "schema": { "$ref": "#/entities/Section" },
+      "description": "Sections"
+    },
+    "/subjects/{subjectId}": {
+      "schema": { "$ref": "#/entities/Subject" },
+      "description": "Subjects"
+    },
+    "/students/{studentId}": {
+      "schema": { "$ref": "#/entities/Student" },
+      "description": "Students"
+    },
+    "/staff/{staffId}": {
+      "schema": { "$ref": "#/entities/Staff" },
+      "description": "Staff"
+    },
+    "/attendance/{attendanceId}": {
+      "schema": { "$ref": "#/entities/Attendance" },
+      "description": "Attendance logs"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Audit trails"
+    },
+    "/settings/{settingsId}": {
+      "schema": { "$ref": "#/entities/Settings" },
+      "description": "System settings"
+    }
+  }
+}

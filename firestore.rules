@@ -1,0 +1,122 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default safety catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Common security functions
+    function isSignedIn() {
+      return true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Role checks
+    function isUserSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isSchoolStaff() {
+      return isSignedIn();
+    }
+
+    // --- Schools collection ---
+    match /schools/{schoolId} {
+      allow read: if true;
+      allow create: if isValidId(schoolId);
+      allow update: if isValidId(schoolId);
+      allow delete: if false;
+    }
+
+    // --- Users collection ---
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isUserSelf(userId) || isSignedIn() || isValidId(userId);
+      allow update: if isUserSelf(userId) || isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // --- Academic Sessions ---
+    match /academicSessions/{sessionId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(sessionId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Classes ---
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(classId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Sections ---
+    match /sections/{sectionId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(sectionId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Subjects ---
+    match /subjects/{subjectId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(subjectId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Students ---
+    match /students/{studentId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(studentId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Staff ---
+    match /staff/{staffId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(staffId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Attendance ---
+    match /attendance/{attendanceId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(attendanceId);
+      allow delete: if isSignedIn();
+    }
+
+    match /attendanceDaily/{attendanceId} {
+      allow read: if isSignedIn();
+      allow create, update: if isSignedIn() && isValidId(attendanceId);
+      allow delete: if isSignedIn();
+    }
+
+    // --- Audit Logs ---
+    match /auditLogs/{logId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidId(logId);
+      // Audit logs must be immutable once created
+      allow update, delete: if false;
+    }
+
+    // --- Settings ---
+    match /settings/{settingsId} {
+      allow read: if true;
+      allow create, update: if isValidId(settingsId);
+      allow delete: if false;
+    }
+  }
+}
